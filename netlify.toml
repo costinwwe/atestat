@@ -1,5 +1,0 @@
-[[redirects]]
-  from = "/api/*"
-  to = "https://iacademy2.oracle.com/ords/ro_a665_plsql_s25/votesafe/:splat"
-  status = 200
-  force = true
