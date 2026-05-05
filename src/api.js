@@ -9,10 +9,6 @@ async function request(path, options = {}, params = {}) {
   }
 
   const response = await fetch(url, {
-    headers: {
-      "Content-Type": "application/json",
-      "X-Requested-With": "XMLHttpRequest",
-    },
     ...options,
   });
 
