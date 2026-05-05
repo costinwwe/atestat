@@ -71,3 +71,6 @@ export const vote = (payload) =>
 
 export const getResults = (pollId) =>
   request(`polls/${pollId}/results`, { method: "GET" });
+
+export const createOption = (payload) =>
+  request("options", { method: "POST" }, payload);
