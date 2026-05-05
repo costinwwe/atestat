@@ -51,59 +51,49 @@ export default function CreatePoll() {
     }
   }
 
-  const handleSubmit = async (event) => {
-    event.preventDefault()
-    setError('')
-    setMessage('')
+ const handleSubmit = async (event) => {
+  event.preventDefault()
+  setError('')
+  setMessage('')
 
-    const trimmedOptions = options.map((item) => item.trim()).filter(Boolean)
-    if (!title.trim() || !closesAt.trim()) {
-      setError('Please complete all required fields.')
-      return
-    }
-    if (trimmedOptions.length < 2) {
-      setError('Add at least two options.')
-      return
-    }
-
-    setSubmitting(true)
-    try {
-      const result = await createPoll({
-        organizer_id: user.user_id || user.id,
-        title: title.trim(),
-        description: description.trim(),
-        closes_at: closesAt,
-      })
-      const locationHeader = result?.headers?.get?.('Location') || result?.headers?.get?.('location')
-      const pollIdFromLocation = locationHeader ? locationHeader.split('/').pop() : null
-      const pollId =
-        result?.data?.poll_id ||
-        result?.data?.id ||
-        result?.data?.pollId ||
-        result?.data?.items?.[0]?.poll_id ||
-        pollIdFromLocation
-
-      if (!pollId) {
-        setMessage('Poll created successfully, but the created poll ID was not returned.')
-        setCreatedPollId(null)
-        navigate('/')
-        return
-      }
-
-      await Promise.all(
-        trimmedOptions.map((optionText) =>
-          createOption({ poll_id: pollId, option_text: optionText }),
-        ),
-      )
-
-      setCreatedPollId(pollId)
-      setMessage('Poll created successfully!')
-    } catch (err) {
-      setError(err.message || 'Unable to create poll.')
-    } finally {
-      setSubmitting(false)
-    }
+  const trimmedOptions = options.map((item) => item.trim()).filter(Boolean)
+  if (!title.trim() || !closesAt.trim()) {
+    setError('Please complete all required fields.')
+    return
   }
+  if (trimmedOptions.length < 2) {
+    setError('Add at least two options.')
+    return
+  }
+
+  setSubmitting(true)
+  try {
+    const result = await createPoll({
+      organizer_id: String(user.user_id || user.id),
+      title: title.trim(),
+      description: description.trim(),
+      closes_at: closesAt,
+    })
+
+    const pollId = result?.poll_id
+
+    if (!pollId) {
+      setError('Poll created but ID not returned.')
+      return
+    }
+
+    for (const optionText of trimmedOptions) {
+      await createOption({ poll_id: String(pollId), option_text: optionText })
+    }
+
+    setCreatedPollId(pollId)
+    setMessage('Poll created successfully!')
+  } catch (err) {
+    setError(err.message || 'Unable to create poll.')
+  } finally {
+    setSubmitting(false)
+  }
+}
 
   return (
     <section className="page page-create-poll">

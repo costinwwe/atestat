@@ -43,18 +43,7 @@ export const getPolls = () => request("polls", { method: "GET" });
 export const getPoll = (id) => request(`polls/${id}`, { method: "GET" });
 
 export const createPoll = async (payload) => {
-  const { options, ...pollData } = payload;
-  const pollRes = await request("polls", { method: "POST" }, pollData);
-  const pollId = pollRes?.poll_id;
-  if (pollId && options?.length) {
-    for (const option_text of options) {
-      await request(
-        "options",
-        { method: "POST" },
-        { poll_id: String(pollId), option_text },
-      );
-    }
-  }
+  const pollRes = await request("polls", { method: "POST" }, payload);
   return pollRes;
 };
 
