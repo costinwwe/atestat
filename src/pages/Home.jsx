@@ -23,30 +23,38 @@ export default function Home() {
 
   return (
     <section className="page page-home">
-      <h1>VoteSafe</h1>
-      <p className="text-muted">Welcome to VoteSafe. Browse active polls and cast your vote.</p>
+      <div className="page-header">
+        <h1>Active polls</h1>
+        <p>Browse and vote on open polls below.</p>
+      </div>
 
       {user ? (
-        <div className="message message--success">
-          Logged in as <strong>{user.username || user.email}</strong> ({user.role || 'voter'})
+        <div className="user-pill">
+          <span className="user-pill__dot" />
+          Signed in as <strong style={{ marginLeft: 4 }}>{user.username || user.email}</strong>
+          <span style={{ opacity: 0.5, margin: '0 2px' }}>·</span>
+          {user.role}
         </div>
       ) : (
-        <div className="message message--info">
+        <div className="message message--info" style={{ marginBottom: '1.5rem' }}>
           <Link to="/login">Sign in</Link> or <Link to="/register">register</Link> to vote.
         </div>
       )}
 
       {user?.role === 'organizer' && (
-        <div className="message message--info">
-          <Link to="/polls/create">Create a new poll</Link>
+        <div className="home-banner">
+          <p>You can create and manage polls as an organizer.</p>
+          <Link to="/polls/create" className="button" style={{ flexShrink: 0 }}>
+            Create poll
+          </Link>
         </div>
       )}
 
-      {loading && <p>Loading polls...</p>}
-      {error && <p className="message message--error">{error}</p>}
+      {loading && <p className="text-muted">Loading polls...</p>}
+      {error && <div className="message message--error">{error}</div>}
 
-      {polls.length === 0 && !loading ? (
-        <p>No active polls found.</p>
+      {!loading && polls.length === 0 ? (
+        <div className="empty-state">No active polls found.</div>
       ) : (
         <ul className="poll-list">
           {polls.map((poll) => (

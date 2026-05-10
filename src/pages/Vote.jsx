@@ -26,16 +26,8 @@ export default function Vote() {
     event.preventDefault()
     setError('')
     setMessage('')
-
-    if (!user) {
-      navigate('/login')
-      return
-    }
-
-    if (!selectedOption) {
-      setError('Select an option before voting.')
-      return
-    }
+    if (!user) { navigate('/login'); return }
+    if (!selectedOption) { setError('Select an option before voting.'); return }
 
     try {
       const result = await vote({
@@ -50,76 +42,78 @@ export default function Vote() {
     }
   }
 
-  if (loading) {
-    return <p>Loading poll...</p>
-  }
+  if (loading) return <p className="text-muted">Loading poll...</p>
+  if (!poll) return <p className="text-muted">{error || 'Poll not found.'}</p>
 
-  if (!poll) {
-    return <p>{error || 'Poll not found.'}</p>
-  }
-
-  const options = Array.isArray(poll.options)
-    ? poll.options
-    : poll.OPTIONS || poll.options_list || []
-
+  const options = Array.isArray(poll.options) ? poll.options : poll.OPTIONS || []
   const closesAt = poll.closes_at || poll.CLOSES_AT
   const isClosed =
-    poll.is_closed === 1 ||
-    poll.is_closed === '1' ||
-    poll.is_closed === true ||
+    poll.is_closed === 1 || poll.is_closed === '1' || poll.is_closed === true ||
     (closesAt && new Date(closesAt) < new Date())
+
+  const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-GB', {
+    day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+  }) : ''
 
   return (
     <section className="page page-vote">
-      <h1>{poll.title || poll.TITLE}</h1>
-      <p className="text-muted">{poll.description || poll.DESCRIPTION}</p>
-      <p className="text-muted">Closes at: {closesAt}</p>
-      <p className="text-muted">Status: {isClosed ? 'Closed' : 'Open'}</p>
+      <div className="vote-header">
+        <h1>{poll.title || poll.TITLE}</h1>
+        {(poll.description || poll.DESCRIPTION) && (
+          <p style={{ marginTop: '0.25rem' }}>{poll.description || poll.DESCRIPTION}</p>
+        )}
+      </div>
+
+      <div className="vote-meta">
+        <span className="vote-meta-item">{isClosed ? 'Closed' : 'Closes'} {formatDate(closesAt)}</span>
+        {poll.organizer && <span className="vote-meta-item">by {poll.organizer}</span>}
+        <span className={`poll-badge ${isClosed ? 'closed' : 'open'}`}>{isClosed ? 'Closed' : 'Open'}</span>
+      </div>
 
       {isClosed ? (
-        <div className="field-group">
-          <p>This poll is closed. View the results.</p>
-          <Link to={`/polls/${id}/results`} className="button button--secondary">
+        <div className="closed-notice">
+          <span>This poll is closed.</span>
+          <Link to={`/polls/${id}/results`} className="button button--secondary" style={{ marginLeft: 'auto' }}>
             See results
           </Link>
         </div>
       ) : (
         <form className="form" onSubmit={handleVote}>
-          <fieldset className="fieldset" disabled={hasVoted}>
-            <legend className="legend">Select an option</legend>
-            {options.length === 0 ? (
-              <p>No options available.</p>
-            ) : (
-              options.map((option) => {
-                const value = option.option_id || option.id || option.OPTION_ID
-                const label = option.option_text || option.OPTION_TEXT || option.text || option.TEXT
-                return (
-                  <label className="label" key={value}>
-                    <input
-                      type="radio"
-                      name="pollOption"
-                      value={value}
-                      checked={String(selectedOption) === String(value)}
-                      onChange={(event) => setSelectedOption(event.target.value)}
-                    />{' '}
-                    {label}
-                  </label>
-                )
-              })
-            )}
-          </fieldset>
+          <div className="field-group">
+            <span className="legend">Select an option</span>
+            <div className="vote-options">
+              {options.length === 0 ? (
+                <p className="text-muted">No options available.</p>
+              ) : (
+                options.map((option) => {
+                  const value = option.option_id || option.id || option.OPTION_ID
+                  const label = option.option_text || option.OPTION_TEXT || option.text || option.TEXT
+                  return (
+                    <label className="vote-option" key={value}>
+                      <input
+                        type="radio"
+                        name="pollOption"
+                        value={value}
+                        checked={String(selectedOption) === String(value)}
+                        onChange={(e) => setSelectedOption(e.target.value)}
+                        disabled={hasVoted}
+                      />
+                      {label}
+                    </label>
+                  )
+                })
+              )}
+            </div>
+          </div>
+
           {error && <div className="message message--error">{error}</div>}
           {message && <div className="message message--success">{message}</div>}
-          {hasVoted && (
-            <p>
-              <Link to={`/polls/${id}/results`} className="button button--secondary">
-                See results
-              </Link>
-            </p>
+
+          {hasVoted ? (
+            <Link to={`/polls/${id}/results`} className="button">See results</Link>
+          ) : (
+            <button type="submit" className="button">Submit vote</button>
           )}
-          <button type="submit" className="button" disabled={hasVoted}>
-            {hasVoted ? 'Vote submitted' : 'Vote'}
-          </button>
         </form>
       )}
     </section>
