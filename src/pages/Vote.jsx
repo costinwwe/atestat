@@ -62,13 +62,18 @@ export default function Vote() {
     ? poll.options
     : poll.OPTIONS || poll.options_list || []
 
-  const isClosed = poll.is_closed === 1 || poll.is_closed === '1' || poll.is_closed === true
+  const closesAt = poll.closes_at || poll.CLOSES_AT
+  const isClosed =
+    poll.is_closed === 1 ||
+    poll.is_closed === '1' ||
+    poll.is_closed === true ||
+    (closesAt && new Date(closesAt) < new Date())
 
   return (
     <section className="page page-vote">
       <h1>{poll.title || poll.TITLE}</h1>
       <p className="text-muted">{poll.description || poll.DESCRIPTION}</p>
-      <p className="text-muted">Closes at: {poll.closes_at || poll.CLOSES_AT}</p>
+      <p className="text-muted">Closes at: {closesAt}</p>
       <p className="text-muted">Status: {isClosed ? 'Closed' : 'Open'}</p>
 
       {isClosed ? (

@@ -6,7 +6,7 @@ function normalizeResults(rawResults) {
   if (!rawResults) return []
   if (Array.isArray(rawResults)) return rawResults
 
-  const arrayKeys = ['options', 'items', 'results', 'data', 'rows']
+  const arrayKeys = ['results', 'options', 'items', 'data', 'rows']
   for (const key of arrayKeys) {
     if (Array.isArray(rawResults[key])) {
       return rawResults[key]
@@ -31,6 +31,8 @@ function formatOption(option, index) {
   }
 
   const label =
+    option.option ||
+    option.OPTION ||
     option.option_text ||
     option.OPTION_TEXT ||
     option.text ||
@@ -43,13 +45,13 @@ function formatOption(option, index) {
     `Option ${index + 1}`
 
   const count =
+    option.votes ??
+    option.VOTES ??
     option.vote_count ??
     option.VOTE_COUNT ??
     option.count ??
     option.total ??
     option.TOTAL ??
-    option.votes ??
-    option.VOTES ??
     0
 
   const key =
@@ -107,7 +109,7 @@ export default function Results() {
 
   return (
     <section className="page page-results">
-      <h1>Poll results</h1>
+      <h1>{results.title || 'Poll results'}</h1>
       {formattedOptions.length === 0 ? (
         <p>No votes have been recorded yet or results are not available.</p>
       ) : (
